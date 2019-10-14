@@ -13,10 +13,10 @@ class CPU:
         self.isRunning = True
 
     def ram_read(self, MAR):
-        return self.ram[pc]
+        return self.ram[MAR]
 
     def ram_write(self, MDR, MAR):
-        self.ram[pc] = value
+        self.ram[MAR] = MDR
 
     def load(self):
         """Load a program into memory."""
