@@ -1,5 +1,4 @@
 """CPU functionality."""
-
 import sys
 
 
@@ -8,7 +7,16 @@ class CPU:
 
     def __init__(self):
         """Construct a new CPU."""
-        pass
+        self.reg = [0] * 8
+        self.ram = [0] * 256
+        self.pc = 0
+        self.isRunning = True
+
+    def ram_read(self, MAR):
+        return self.ram[pc]
+
+    def ram_write(self, MDR, MAR):
+        self.ram[pc] = value
 
     def load(self):
         """Load a program into memory."""
@@ -62,4 +70,10 @@ class CPU:
 
     def run(self):
         """Run the CPU."""
-        pass
+        while self.isRunning is True:
+            IR = self.ram[self.pc]
+            operand_a = self.ram_read(self.pc + 1)
+            operand_b = self.ram_read(self.pc + 2)
+
+            if IR == HLT:
+                self.isRunning = False
