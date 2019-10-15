@@ -4,7 +4,7 @@ import sys
 HLT = 0b00000001
 LDI = 0b10000010
 PRN = 0b01000111
-
+MUL  = 0b10100010
 
 class CPU:
     """Main CPU class."""
@@ -15,6 +15,7 @@ class CPU:
         self.ram = [0] * 256
         self.pc = 0
         self.isRunning = True
+        self.reg[7] = 0xf4
 
     def ram_read(self, MAR):
         return self.ram[MAR]
@@ -80,6 +81,8 @@ class CPU:
                 self.reg[operand_a] = operand_b
             elif IR == PRN:
                 print(self.reg[operand_a])
+            elif IR == MUL:
+                self.reg[operand_a] *= self.reg[operand_b]
             else:
                 raise Exception('error: unknown command')
 
