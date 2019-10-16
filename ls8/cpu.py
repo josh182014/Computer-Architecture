@@ -5,6 +5,11 @@ HLT = 0b00000001
 LDI = 0b10000010
 PRN = 0b01000111
 MUL = 0b10100010
+ADD = 0b10100000
+PUSH = 0b01000101
+POP = 0b01000110
+
+SP = 7
 
 
 class CPU:
@@ -16,20 +21,22 @@ class CPU:
         self.ram = [0] * 256
         self.pc = 0
         self.isRunning = True
-        self.reg[7] = 0xf4
+        self.reg[SP] = 0xf4
 
         self.commands = {
             HLT: self.HLTMethod,
             LDI: self.LDIMethod,
             PRN: self.PRNMethod,
-            MUL: self.MULMethod
+            MUL: self.MULMethod,
+            PUSH: self.PUSHMethod,
+            POP: self.POPMethod
         }
 
     def ram_read(self, MAR):
         return self.ram[MAR]
 
     def ram_write(self, MDR, MAR):
-        self.ram[MAR] = MDR
+        self.ram[MDR] = MAR
 
     def load(self, file):
         """Load a program into memory."""
@@ -52,7 +59,8 @@ class CPU:
 
         if op == "ADD":
             self.reg[reg_a] += self.reg[reg_b]
-        # elif op == "SUB": etc
+        elif op == "MUL":
+            self.reg[reg_a] *= self.reg[reg_b]
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -86,7 +94,8 @@ class CPU:
             if IR in self.commands:
                 self.commands[IR](operand_a, operand_b)
             else:
-                raise Exception('error: unknown command')
+                print(IR)
+                raise Exception('error: unknown command:')
 
             self.pc += (IR >> 6) + 1
 
@@ -101,3 +110,12 @@ class CPU:
 
     def MULMethod(self, a, b):
         self.reg[a] *= self.reg[b]
+
+    def PUSHMethod(self, a, b):
+        self.reg[SP] -= 1
+        self.ram_write(self.reg[SP], self.reg[a])
+
+    def POPMethod(self, a, b):
+        val = self.ram_read(self.reg[SP])
+        self.reg[SP] += 1
+        self.reg[a] = val
