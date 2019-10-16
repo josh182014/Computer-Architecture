@@ -18,6 +18,13 @@ class CPU:
         self.isRunning = True
         self.reg[7] = 0xf4
 
+        self.commands = {
+            HLT: self.HLTMethod,
+            LDI: self.LDIMethod,
+            PRN: self.PRNMethod,
+            MUL: self.MULMethod
+        }
+
     def ram_read(self, MAR):
         return self.ram[MAR]
 
@@ -76,15 +83,21 @@ class CPU:
             operand_a = self.ram_read(self.pc + 1)
             operand_b = self.ram_read(self.pc + 2)
 
-            if IR == HLT:
-                self.isRunning = False
-            elif IR == LDI:
-                self.reg[operand_a] = operand_b
-            elif IR == PRN:
-                print(self.reg[operand_a])
-            elif IR == MUL:
-                self.reg[operand_a] *= self.reg[operand_b]
+            if IR in self.commands:
+                self.commands[IR](operand_a, operand_b)
             else:
                 raise Exception('error: unknown command')
 
             self.pc += (IR >> 6) + 1
+
+    def HLTMethod(self, a, b):
+        self.isRunning = False
+
+    def LDIMethod(self, a, b):
+        self.reg[a] = b
+
+    def PRNMethod(self, a, b):
+        print(self.reg[a])
+
+    def MULMethod(self, a, b):
+        self.reg[a] *= self.reg[b]
