@@ -96,8 +96,13 @@ class CPU:
             else:
                 print(IR)
                 raise Exception('error: unknown command:')
-
+            
+            print('pre-pc', self.pc)
+            print('IR', IR)
+            print('bin IR', bin(IR))
+            print('weird thing', IR >> 6)
             self.pc += (IR >> 6) + 1
+            print('end-pc', self.pc)
 
     def HLTMethod(self, a, b):
         self.isRunning = False
