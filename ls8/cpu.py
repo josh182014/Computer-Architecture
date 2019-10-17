@@ -8,6 +8,8 @@ MUL = 0b10100010
 ADD = 0b10100000
 PUSH = 0b01000101
 POP = 0b01000110
+CALL = 0b01010000
+RET = 0b00010001
 
 SP = 7
 
@@ -29,7 +31,10 @@ class CPU:
             PRN: self.PRNMethod,
             MUL: self.MULMethod,
             PUSH: self.PUSHMethod,
-            POP: self.POPMethod
+            POP: self.POPMethod,
+            CALL: self.CALLMethod,
+            RET: self.RETMethod,
+            ADD: self.ADDMethod
         }
 
     def ram_read(self, MAR):
@@ -90,19 +95,17 @@ class CPU:
             IR = self.ram[self.pc]
             operand_a = self.ram_read(self.pc + 1)
             operand_b = self.ram_read(self.pc + 2)
-
+            size = (IR >> 6) + 1
+            sets = ((IR >> 4) & 0b1) == 1
             if IR in self.commands:
                 self.commands[IR](operand_a, operand_b)
             else:
                 print(IR)
                 raise Exception('error: unknown command:')
-            
-            print('pre-pc', self.pc)
-            print('IR', IR)
-            print('bin IR', bin(IR))
-            print('weird thing', IR >> 6)
-            self.pc += (IR >> 6) + 1
-            print('end-pc', self.pc)
+
+            # self.pc += (IR >> 6) + 1
+            if not sets:
+                self.pc += size
 
     def HLTMethod(self, a, b):
         self.isRunning = False
@@ -116,11 +119,27 @@ class CPU:
     def MULMethod(self, a, b):
         self.reg[a] *= self.reg[b]
 
-    def PUSHMethod(self, a, b):
+    def pushHelper(self, val):
         self.reg[SP] -= 1
-        self.ram_write(self.reg[SP], self.reg[a])
+        self.ram_write(self.reg[SP], val)
 
-    def POPMethod(self, a, b):
+    def PUSHMethod(self, a, b):
+        self.pushHelper(self.reg[a])
+
+    def popHelper(self):
         val = self.ram_read(self.reg[SP])
         self.reg[SP] += 1
-        self.reg[a] = val
+        return val
+
+    def POPMethod(self, a, b):
+        self.reg[a] = self.popHelper()
+
+    def CALLMethod(self, a, b):
+        self.pushHelper(self.pc + 2)
+        self.pc = self.reg[a]
+
+    def RETMethod(self, a, b):
+        self.pc = self.popHelper()
+
+    def ADDMethod(self, a, b):
+        self.alu("ADD", a, b)
